@@ -1,7 +1,11 @@
-DXX-Redux
+DXX-Redux (experimental Archipelago multiworld support)
 =========
 
-Descent 1&2 source port based on [DXX-Retro](https://github.com/CDarrow/DXX-Retro).
+Descent 1&2 source port based on [DXX-Retro](https://github.com/CDarrow/DXX-Retro). 
+
+**DISCLAIMER: This fork has no functioning archipelago multiworld support yet!**
+
+This is just so I can start messing around with the changes needed for now. This might go nowhere. Don't get your hopes up too much yet.
 
 Building in Visual Studio
 -------------------------
