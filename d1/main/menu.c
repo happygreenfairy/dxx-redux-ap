@@ -2214,7 +2214,7 @@ struct ap_menu_data {
 
 void do_ap_menu()
 {
-	newmenu_item m[10];
+	newmenu_item m[11];
 	int i = 0;
 	struct ap_menu_data ap_menu_data;
 
@@ -2234,14 +2234,16 @@ void do_ap_menu()
 		ADD_CHECK(6, "Items on automap", PlayerCfg.AutomapRenderItems);
 		ADD_CHECK(7, "Show full automap", PlayerCfg.AutomapUnveilFromStart);
 		m[8].type = NM_TYPE_TEXT;
-		m[8].text = "-DIFFICULTY TWEAKS-";
-		ADD_CHECK(9, "Infinite lives", PlayerCfg.InfiniteLives);
+		m[8].text = "";
+		m[9].type = NM_TYPE_TEXT;
+		m[9].text = "-DIFFICULTY TWEAKS-";
+		ADD_CHECK(10, "Infinite lives", PlayerCfg.InfiniteLives);
 
 		i = newmenu_do1(NULL, TXT_ARCHIPELAGO_MENU, SDL_arraysize(m), m, menu_ap_options_handler, &ap_menu_data, i);
 
 		PlayerCfg.AutomapRenderItems = m[6].value;
 		PlayerCfg.AutomapUnveilFromStart = m[7].value;
-		PlayerCfg.InfiniteLives = m[9].value;
+		PlayerCfg.InfiniteLives = m[10].value;
 
 	} while (i > -1);
 }
