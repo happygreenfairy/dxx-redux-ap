@@ -547,6 +547,25 @@ int read_player_d1x(char *filename)
 				d_strupr(word);
 			}
 		}
+		// new stuff for the arcihpelago -happygreenfairy
+		else if (strstr(word, "ARCHIPELAGO"))
+		{
+			d_free(word);
+			PHYSFSX_fgets(line, 50, f);
+			word = splitword(line, '=');
+			d_strupr(word);
+
+			while (!strstr(word, "END") && !PHYSFS_eof(f))
+			{
+				// will automap display items?
+				if (!strcmp(word, "AUTOMAPITEMS"))
+					PlayerCfg.AutomapRenderItems = atoi(line);
+				PHYSFSX_fgets(line, 50, f);
+				word = splitword(line, '=');
+				d_strupr(word);
+			}
+		}
+		//end new stuff for the archipelago -happygreenfairy
 		else if (strstr(word,"PLX VERSION")) // know the version this pilot was used last with - allow modifications
 		{
 			int v1=0,v2=0,v3=0;
@@ -1000,6 +1019,10 @@ int write_player_d1x(char *filename)
 		PHYSFSX_printf(fout,"[plx version]\n");
 		PHYSFSX_printf(fout,"plx version=%s\n", VERSION);
 		PHYSFSX_printf(fout,"[end]\n");
+		// new stuff for archipelago -happygreenfairy
+		PHYSFSX_printf(fout, "[archipelago]\n");
+		PHYSFSX_printf(fout, "automapitems=%i\n", PlayerCfg.AutomapRenderItems);
+		PHYSFSX_printf(fout, "[end]\n");
 		PHYSFSX_printf(fout,"[end]\n");
 
 		PHYSFS_close(fout);
