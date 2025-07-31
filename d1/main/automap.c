@@ -134,6 +134,11 @@ typedef struct automap
 	int			white_63;
 	int			blue_48;
 	int			red_48;
+	// extra for archipelago, might not do anything? -happygreenfairy
+	int			orange_63;
+	int			yellow_63;
+	int			green_63;
+	int			purple_63;
 	control_info controls;
 } automap;
 
@@ -165,6 +170,11 @@ void init_automap_colors(automap *am)
 	am->white_63 = gr_find_closest_color_current(63,63,63);
 	am->blue_48 = gr_find_closest_color_current(0,0,48);
 	am->red_48 = gr_find_closest_color_current(48,0,0);
+	// extra colors for archipelago, might not do anything? -happygreenfairy
+	am->orange_63 = gr_find_closest_color_current(63, 48, 0);
+	am->yellow_63 = gr_find_closest_color_current(63, 63, 0);
+	am->green_63 = gr_find_closest_color_current(0, 63, 0);
+	am->purple_63 = gr_find_closest_color_current(0, 48, 63);
 }
 
 // Segment visited list
@@ -424,8 +434,22 @@ void draw_automap(automap *am)
 			g3_draw_sphere(&sphere_point,objp->size);	
 			break;
 		case OBJ_POWERUP:
-			if ( Automap_visited[objp->segnum] )	{
-				if ( (objp->id==POW_KEY_RED) || (objp->id==POW_KEY_BLUE) || (objp->id==POW_KEY_GOLD) )	{
+			if(PlayerCfg.AutomapRenderItems == 0)	{
+				if ( Automap_visited[objp->segnum] )	{
+					if ( (objp->id==POW_KEY_RED) || (objp->id==POW_KEY_BLUE) || (objp->id==POW_KEY_GOLD) )	{
+						switch (objp->id) {
+						case POW_KEY_RED:		gr_setcolor(BM_XRGB(63, 5, 5));	break;
+						case POW_KEY_BLUE:	gr_setcolor(BM_XRGB(5, 5, 63)); break;
+						case POW_KEY_GOLD:	gr_setcolor(BM_XRGB(63, 63, 10)); break;
+						default:
+							Error("Illegal key type: %i", objp->id);
+						}
+						g3_rotate_point(&sphere_point,&objp->pos);
+						g3_draw_sphere(&sphere_point,objp->size*4);	
+					}
+				}
+			} else if (PlayerCfg.AutomapRenderItems == 1) {
+				if ((objp->id == POW_KEY_RED) || (objp->id == POW_KEY_BLUE) || (objp->id == POW_KEY_GOLD)) {
 					switch (objp->id) {
 					case POW_KEY_RED:		gr_setcolor(BM_XRGB(63, 5, 5));	break;
 					case POW_KEY_BLUE:	gr_setcolor(BM_XRGB(5, 5, 63)); break;
@@ -433,10 +457,32 @@ void draw_automap(automap *am)
 					default:
 						Error("Illegal key type: %i", objp->id);
 					}
-					g3_rotate_point(&sphere_point,&objp->pos);
-					g3_draw_sphere(&sphere_point,objp->size*4);	
+					g3_rotate_point(&sphere_point, &objp->pos);
+					g3_draw_sphere(&sphere_point, objp->size * 4);
+				}
+				// draw apitem
+				// THE || IS PURELY A TEST! Draw spreadfire weapons the same way as AP items
+				else if (objp->id == POW_APITEM || objp->id == POW_SPREADFIRE_WEAPON) {
+					//color should cycle based on tick. hopefully this does what I want it to. -happygreenfairy
+					// todo: figure out why in between colors don't work like orange
+					// orange
+					if (d_tick_count % 120 < 20) { gr_setcolor(BM_XRGB(48, 63, 16)); }
+					// blue
+					else if (d_tick_count % 120 >= 20 && d_tick_count % 120 < 40 ) { gr_setcolor(BM_XRGB(0, 0, 63)); }
+					// yellow
+					else if (d_tick_count % 120 >= 40 && d_tick_count % 120 < 60) { gr_setcolor(BM_XRGB(63, 63, 0)); }
+					// red
+					else if (d_tick_count % 120 >= 60 && d_tick_count % 120 < 80) { gr_setcolor(BM_XRGB(63, 0, 0)); }
+					// green
+					else if (d_tick_count % 120 >= 80 && d_tick_count % 120 < 100) { gr_setcolor(BM_XRGB(0, 63, 0)); }
+					// green
+					else { gr_setcolor(BM_XRGB(0, 63, 0)); }
+					//draw
+					g3_rotate_point(&sphere_point, &objp->pos);
+					g3_draw_sphere(&sphere_point, objp->size * 2);
 				}
 			}
+
 			break;
 		}
 	}

@@ -40,6 +40,7 @@ extern fix FrameTime;           // time in seconds since last frame
 extern fix64 GameTime64;            // time in game (sum of FrameTime)
 extern int d_tick_count; // increments every 50ms
 extern int d_tick_step;  // true once every 50ms
+extern int d_tick_even_during_pause; // true once every 50ms, should still happen while paused for color cycle effects
 extern fix64 Next_laser_fire_time;    // Time at which player can next fire his selected laser.
 extern fix64 Last_laser_fired_time;
 extern fix64 Next_missile_fire_time;  // Time at which player can next fire his selected missile.

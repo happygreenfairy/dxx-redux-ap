@@ -35,6 +35,8 @@ fix64 GameTime64 = 0;			//	Time in game, in seconds
 
 int d_tick_count = 0; // increments every 50ms
 int d_tick_step = 0;  // true once every 50ms
+// this is new to the archipelago so I can render color cycle effects. -happygreenfairy
+int d_tick_even_during_pause = 0; // true once every 50ms, should still happen while paused for color cycle effects
 
 //	This is the global mine which create_new_mine returns.
 segment	Segments[MAX_SEGMENTS];

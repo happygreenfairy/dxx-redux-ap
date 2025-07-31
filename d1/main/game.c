@@ -368,6 +368,23 @@ void calc_d_tick()
 	}
 }
 
+void calc_d_paused_tick()
+{
+	static fix timer = 0;
+
+	d_tick_even_during_pause = 0;
+
+	timer += FrameTime;
+	if (timer >= F1_0 / 20)
+	{
+		d_tick_even_during_pause = 1;
+		d_tick_even_during_pause++;
+		if (d_tick_even_during_pause > 1000000)
+			d_tick_even_during_pause = 0;
+		timer = (timer - (F1_0 / 20));
+	}
+}
+
 void reset_time()
 {
 	timer_update();
@@ -1005,10 +1022,11 @@ int game_handler(window *wind, d_event *event, void *data)
 
 		case EVENT_WINDOW_DRAW:
 			calc_frame_time();
-			
+			calc_d_paused_tick();
 			if (!time_paused)
 			{
 				calc_game_time();
+
 				GameProcessFrame();
 			}
 

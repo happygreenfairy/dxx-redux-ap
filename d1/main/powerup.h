@@ -58,6 +58,7 @@ enum powerup_type_t
 	POW_INVULNERABILITY = 25,
 	POW_HEADLIGHT = 26,
 	POW_MEGAWOW = 27,
+	POW_APITEM = 28
 };
 
 #define VULCAN_AMMO_MAX             (392*2)
