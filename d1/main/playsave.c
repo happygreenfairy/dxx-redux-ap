@@ -160,6 +160,9 @@ int new_player_config()
 	PlayerCfg.NetlifeKills=0; PlayerCfg.NetlifeKilled=0;
 	#endif
 	
+	//New stuff for archipelago fork -happygreenfairy
+	PlayerCfg.AutomapRenderItems = 0;
+
 	return 1;
 }
 

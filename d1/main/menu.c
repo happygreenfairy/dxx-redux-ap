@@ -106,8 +106,10 @@ enum MENUS
     MENU_JOIN_LIST_UDP_NETGAME,
     #endif
     #ifndef RELEASE
-    MENU_SANDBOX
+    MENU_SANDBOX,
     #endif
+	// new to the fork. -happygreenfairy (I'm signing my comments for now so it's easier to find the new code. I know I can use bookmarks too, but...)
+	MENU_ARCHIPELAGO_SETTINGS
 };
 
 //ADD_ITEM("Start netgame...", MENU_START_NETGAME, -1 );
@@ -828,6 +830,7 @@ void change_res();
 void graphics_config();
 void do_misc_menu();
 void do_obs_menu();
+void do_ap_menu();
 
 int options_menuset(newmenu *menu, d_event *event, void *userdata)
 {
@@ -847,6 +850,7 @@ int options_menuset(newmenu *menu, d_event *event, void *userdata)
 				case  8: ReorderSecondary();		break;
 				case  9: do_misc_menu();		break;
 				case 10: do_obs_menu();         break;
+				case 13: do_ap_menu();         break;
 			}
 			return 1;	// stay in menu until escape
 			break;
@@ -2201,6 +2205,59 @@ int menu_misc_options_handler(newmenu* menu, d_event* event, void* userdata)
 	return 0;
 }
 
+// my probably badly butchered new menu code by copying the misc menu code and changing it. -happygreenfairy
+int menu_ap_options_handler(newmenu* menu, d_event* event, void* userdata);
+
+struct ap_menu_data {
+	char unused[30]; // I honestly don't know if this is needed but I'd rather not take any chances, thanks
+};
+
+void do_ap_menu()
+{
+	newmenu_item m[6];
+	int i = 0;
+	struct ap_menu_data ap_menu_data;
+
+	do {
+		m[0].type = NM_TYPE_TEXT;
+		m[0].text = "Change settings meant for";
+		m[1].type = NM_TYPE_TEXT;
+		m[1].text = "Archipelago multiworlds!";
+		m[2].type = NM_TYPE_TEXT;
+		m[2].text = "";
+		m[3].type = NM_TYPE_TEXT;
+		m[3].text = "Settings here may not work yet.";
+		m[4].type = NM_TYPE_TEXT;
+		m[4].text = "";
+		ADD_CHECK(5, "Items on automap", PlayerCfg.AutomapRenderItems);
+
+		i = newmenu_do1(NULL, TXT_ARCHIPELAGO_MENU, SDL_arraysize(m), m, menu_ap_options_handler, &ap_menu_data, i);
+
+		PlayerCfg.AutomapRenderItems = m[5].value;
+
+	} while (i > -1);
+}
+
+// more copied and edited code! i've intentionally mostly just gutted code instead of doing anything since as far as I know, this is for special overrides mostly. of which I don't need many for now. -happygreenfairy
+int menu_ap_options_handler(newmenu* menu, d_event* event, void* userdata)
+{
+	newmenu_item* menus = newmenu_get_items(menu);
+	int citem = newmenu_get_citem(menu);
+	struct misc_menu_data* menu_data = (struct misc_menu_data*)userdata;
+
+	// I don't think I need this for now -happygreenfairy
+	//if (event->type == EVENT_NEWMENU_CHANGED) {
+	//	if (citem == 28) {
+	//		PlayerCfg.ShipColor = menus[citem].value;
+	//	}
+	//	else if (citem == 29) {
+	//		PlayerCfg.MissileColor = menus[citem].value;
+	//	}
+
+	//}
+	return 0;
+}
+
 int menu_obs_options_handler ( newmenu *menu, d_event *event, void *userdata );
 int select_obs_game_mode_handler(listbox* lb, d_event* event, void* userdata);
 
@@ -2480,7 +2537,7 @@ void do_options_menu()
 {
 	newmenu_item *m;
 
-	MALLOC(m, newmenu_item, 11);
+	MALLOC(m, newmenu_item, 14);
 	if (!m)
 		return;
 
@@ -2495,10 +2552,14 @@ void do_options_menu()
 	m[ 8].type = NM_TYPE_MENU;   m[ 8].text="Secondary autoselect ordering...";
 	m[ 9].type = NM_TYPE_MENU;   m[ 9].text="Misc Options...";
 	m[10].type = NM_TYPE_MENU;   m[10].text="Observer Options...";
+	// Suffice to say, this is new to the fork. -happygreenfairy
+	m[11].type = NM_TYPE_TEXT;   m[11].text = "";
+	m[12].type = NM_TYPE_TEXT;   m[12].text = "-Experimental additions-";
+	m[13].type = NM_TYPE_MENU;   m[13].text = "Archipelago settings...";
 
 	// Fall back to main event loop
 	// Allows clean closing and re-opening when resolution changes
-	newmenu_do3( NULL, TXT_OPTIONS, 11, m, options_menuset, NULL, 0, NULL );
+	newmenu_do3( NULL, TXT_OPTIONS, 14, m, options_menuset, NULL, 0, NULL );
 }
 
 #ifndef RELEASE
