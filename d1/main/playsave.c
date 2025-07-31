@@ -162,6 +162,8 @@ int new_player_config()
 	
 	//New stuff for archipelago fork -happygreenfairy
 	PlayerCfg.AutomapRenderItems = 0;
+	PlayerCfg.AutomapUnveilFromStart = 0;
+	PlayerCfg.InfiniteLives = 0;
 
 	return 1;
 }
@@ -560,6 +562,10 @@ int read_player_d1x(char *filename)
 				// will automap display items?
 				if (!strcmp(word, "AUTOMAPITEMS"))
 					PlayerCfg.AutomapRenderItems = atoi(line);
+				if (!strcmp(word, "AUTOMAPUNVEIL"))
+					PlayerCfg.AutomapUnveilFromStart = atoi(line);
+				if (!strcmp(word, "INFINITELIVES"))
+					PlayerCfg.InfiniteLives = atoi(line);
 				PHYSFSX_fgets(line, 50, f);
 				word = splitword(line, '=');
 				d_strupr(word);
@@ -1022,6 +1028,8 @@ int write_player_d1x(char *filename)
 		// new stuff for archipelago -happygreenfairy
 		PHYSFSX_printf(fout, "[archipelago]\n");
 		PHYSFSX_printf(fout, "automapitems=%i\n", PlayerCfg.AutomapRenderItems);
+		PHYSFSX_printf(fout, "automapunveil=%i\n", PlayerCfg.AutomapUnveilFromStart);
+		PHYSFSX_printf(fout, "infinitelives=%i\n", PlayerCfg.InfiniteLives);
 		PHYSFSX_printf(fout, "[end]\n");
 		PHYSFSX_printf(fout,"[end]\n");
 

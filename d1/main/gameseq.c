@@ -1052,7 +1052,7 @@ void DoPlayerDead()
 	else
 #endif
 	{				//Note link to above else!
-		Players[Player_num].lives--;
+		if (PlayerCfg.InfiniteLives == 0) { Players[Player_num].lives--; }
 		if (Players[Player_num].lives == 0)
 		{
 			DoGameOver();

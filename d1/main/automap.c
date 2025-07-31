@@ -1109,7 +1109,7 @@ void add_segment_edges(automap *am, segment *seg)
 
 		if ( color != 255 )	{
 			// If they have a map powerup, draw unvisited areas in dark blue.
-			if (Players[Player_num].flags & PLAYER_FLAGS_MAP_ALL && (!Automap_visited[segnum]))	
+			if (((Players[Player_num].flags & PLAYER_FLAGS_MAP_ALL) || PlayerCfg.AutomapUnveilFromStart == 1) && (!Automap_visited[segnum]))
 				color = BM_XRGB( 0, 0, 25 );
 
 			get_side_verts(vertex_list,segnum,sn);
@@ -1162,7 +1162,7 @@ void automap_build_edge_list(automap *am)
 	am->num_edges = 0;
 	am->highest_edge_index = -1;
 
-	if (cheats.fullautomap || (Players[Player_num].flags & PLAYER_FLAGS_MAP_ALL) )	{
+	if (cheats.fullautomap || (Players[Player_num].flags & PLAYER_FLAGS_MAP_ALL) || PlayerCfg.AutomapUnveilFromStart == 1)	{
 		// Cheating, add all edges as visited
 		for (s=0; s<=Highest_segment_index; s++)
 #ifdef EDITOR

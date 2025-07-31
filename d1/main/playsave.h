@@ -137,7 +137,9 @@ typedef struct player_config
 	ubyte NoChatSound;
 	ubyte ClassicAutoselectWeapon;
 	// new stuff for archipelago fork -happygreenfairy
-	int AutomapRenderItems;
+	int AutomapRenderItems; // show important items on automap at all times
+	int AutomapUnveilFromStart; // replicates map power-ups
+	int InfiniteLives; // don't lose lives on death when enabled
 } __pack__ player_config;
 
 extern struct player_config PlayerCfg;
