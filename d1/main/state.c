@@ -77,7 +77,7 @@ COPYRIGHT 1993-1998 PARALLAX SOFTWARE CORPORATION.  ALL RIGHTS RESERVED.
 // 6 - Added buggin' cheat save
 // 7 - Added other cheat saves and game_id.
 
-#define NUM_SAVES 10
+#define NUM_SAVES 30
 #define THUMBNAIL_W 100
 #define THUMBNAIL_H 50
 #define DESC_LENGTH 20
@@ -654,10 +654,104 @@ int state_get_savegame_filename(char * fname, char * dsc, char * caption, int bl
 	return 0;
 }
 
+// Duplicate of above for archipelago -happygreenfairy
+int state_ap_get_savegame_filename(char* fname, char* dsc, char* caption, int blind_save, char* apname)
+{
+	PHYSFS_file* fp;
+	int i, choice, version, nsaves;
+	newmenu_item m[NUM_SAVES + 1];
+	char filename[NUM_SAVES][PATH_MAX];
+	char desc[NUM_SAVES][DESC_LENGTH + 16];
+	grs_bitmap* sc_bmp[NUM_SAVES];
+	char id[5], dummy_callsign[CALLSIGN_LEN + 1];
+	int valid;
+
+	nsaves = 0;
+	m[0].type = NM_TYPE_TEXT; m[0].text = "\n\n\n\n";
+	for (i = 0; i < NUM_SAVES; i++) {
+		sc_bmp[i] = NULL;
+		//is this where the filename gets set?
+		snprintf(filename[i], PATH_MAX, GameArg.SysUsePlayersDir ? "Players/%s/%s.%sg%x" : "%s/%s.%sg%x", apname, Players[Player_num].callsign, (Game_mode & GM_MULTI_COOP) ? "m" : "s", i+10);
+		valid = 0;
+		fp = PHYSFSX_openReadBuffered(filename[i]);
+		if (fp) {
+			//Read id
+			PHYSFS_read(fp, id, sizeof(char) * 4, 1);
+			if (!memcmp(id, dgss_id, 4)) {
+				//Read version
+				PHYSFS_read(fp, &version, sizeof(int), 1);
+				// In case it's Coop, read state_game_id & callsign as well
+				if (Game_mode & GM_MULTI_COOP)
+				{
+					PHYSFS_seek(fp, PHYSFS_tell(fp) + sizeof(PHYSFS_sint32)); // skip state_game_id
+					PHYSFS_read(fp, &dummy_callsign, sizeof(char) * CALLSIGN_LEN + 1, 1);
+				}
+				if ((version >= STATE_COMPATIBLE_VERSION) || (SWAPINT(version) >= STATE_COMPATIBLE_VERSION)) {
+					// Read description
+					PHYSFS_read(fp, desc[i], sizeof(char) * DESC_LENGTH, 1);
+					//rpad_string( desc[i], DESC_LENGTH-1 );
+					if (dsc == NULL) m[i + 1].type = NM_TYPE_MENU;
+					// Read thumbnail
+					sc_bmp[i] = gr_create_bitmap(THUMBNAIL_W, THUMBNAIL_H);
+					PHYSFS_read(fp, sc_bmp[i]->bm_data, THUMBNAIL_W * THUMBNAIL_H, 1);
+					nsaves++;
+					valid = 1;
+				}
+			}
+			PHYSFS_close(fp);
+		}
+		if (!valid) {
+			strcpy(desc[i], TXT_EMPTY);
+			//rpad_string( desc[i], DESC_LENGTH-1 );
+			if (dsc == NULL) m[i + 1].type = NM_TYPE_TEXT;
+		}
+		if (dsc != NULL) {
+			m[i + 1].type = NM_TYPE_INPUT_MENU;
+		}
+		m[i + 1].text_len = DESC_LENGTH - 1;
+		m[i + 1].text = desc[i];
+	}
+
+	if (dsc == NULL && nsaves < 1) {
+		nm_messagebox(NULL, 1, "Ok", "No saved games were found!");
+		return 0;
+	}
+
+	sc_last_item = -1;
+	//don't mind me, just hijacking quick saves... -happygreenfairy
+	int temp_state_quick_item = state_quick_item;
+	state_quick_item = Current_level_num+10;
+
+	if (blind_save)
+		choice = state_default_item + 1;
+	else
+		choice = newmenu_do2(NULL, caption, NUM_SAVES + 1, m, (int (*)(newmenu*, d_event*, void*))state_callback, sc_bmp, state_default_item + 1, NULL);
+
+	for (i = 0; i < NUM_SAVES; i++) {
+		if (sc_bmp[i])
+			gr_free_bitmap(sc_bmp[i]);
+	}
+
+	if (choice > 0) {
+		strcpy(fname, filename[choice - 1]);
+		if (dsc != NULL) strcpy(dsc, desc[choice - 1]);
+		state_quick_item = state_default_item = choice - 1;
+		return choice;
+	}
+	//return quick save back to what it was before! -happygrenefairy
+	state_quick_item = temp_state_quick_item;
+	return 0;
+}
+
 // This calls another function which chooses a save slot! If it isn't clear, saving in this game seems to be kind of slightly scuffed in how it works (single line function? really?) and I want to avoid needing to find all this again. -happygreenfairy
 int state_get_save_file(char * fname, char * dsc, int blind_save)
 {
 	return state_get_savegame_filename(fname, dsc, "Save Game", blind_save);
+}
+//duplicate of above for archipelago, added third argument "apn" for archipelago world name + player name -happygreenfairy
+int state_ap_get_save_file(char* fname, char* dsc, char* apn)
+{	
+	return state_ap_get_savegame_filename(fname, dsc, "Save Game", 1, apn);
 }
 
 int state_get_restore_file(char * fname)
@@ -821,6 +915,7 @@ int state_save_all(int blind_save)
 }
 
 //	duplicate of state_save_all for archipelago purposes. not tested yet! probably doesn't work at all! -happygreenfairy
+// debating whether or not to use this still
 int ap_state_save_all(char worldname[512])
 {
 	int	rval;
@@ -837,21 +932,21 @@ int ap_state_save_all(char worldname[512])
 
 	memset(&filename, '\0', PATH_MAX);
 	memset(&worldname, '\0', DESC_LENGTH + 1);
+	//code to attempt to add level number to end of description -happygreenfairy
+	char *levelnumAsChar[4];
+	//I apologize to anybody looking at my hacky solution to make sure this is always 2 digits. I don't feel like double checking whatever the "proper" way to do this is right now. -happygreenfairy
+	if (Current_level_num > 9) { sprintf(levelnumAsChar, "%d", Current_level_num); }
+	if (Current_level_num <= 9) { sprintf(levelnumAsChar, "0%d", Current_level_num); }
 	// This line chooses the save file for saving later! Keep that in mind! -happygreenfairy
-	if (!state_get_save_file(filename, worldname, 1))
+	if (!state_ap_get_save_file(filename, levelnumAsChar, worldname))
 	{
 		start_time();
 		return 0;
 	}
-	//code to attempt to add level number to end of description -happygreenfairy
-	char levelnumAsChar[4];
-	//I apologize to anybody looking at my hacky solution to make sure this is always 2 digits. I don't feel like double checking whatever the "proper" way to do this is right now. -happygreenfairy
-	if (Current_level_num > 9) { sprintf(levelnumAsChar, "__%d", Current_level_num); }
-	if (Current_level_num <= 9) { sprintf(levelnumAsChar, "__0%d", Current_level_num); }
 
 
 	// This line seems to actually finish saving the file. -happygreenfairy
-	rval = state_save_all_sub(filename, strcat(worldname, levelnumAsChar));
+	rval = state_save_all_sub(filename, levelnumAsChar);
 
 	if (rval)
 		HUD_init_message_literal(HM_DEFAULT, "Game saved");
