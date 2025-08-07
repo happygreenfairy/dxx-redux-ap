@@ -673,8 +673,8 @@ int state_ap_get_savegame_filename(char* fname, char* dsc, char* caption, int bl
 	for (i = 0; i < NUM_SAVES; i++) {
 		sc_bmp[i] = NULL;
 		//is this where the filename gets set?
-		snprintf(filename[i], PATH_MAX, GameArg.SysUsePlayersDir ? "Players/aptest/%s.%sg%x" : "/aptest/%s.%sg%x", Players[Player_num].callsign, (Game_mode & GM_MULTI_COOP) ? "m" : "s", i);
-		//snprintf(filename[i], PATH_MAX, GameArg.SysUsePlayersDir ? "Players/%s/%s.%sg%x" : "%s/%s.%sg%x", apname, Players[Player_num].callsign, (Game_mode & GM_MULTI_COOP) ? "m" : "s", i+10);
+		//snprintf(filename[i], PATH_MAX, GameArg.SysUsePlayersDir ? "Players/aptest/%s.%sg%x" : "/aptest/%s.%sg%x", Players[Player_num].callsign, (Game_mode & GM_MULTI_COOP) ? "m" : "s", i);
+		snprintf(filename[i], PATH_MAX, GameArg.SysUsePlayersDir ? "Players/%s/%s.%sg%x" : "%s/%s.%sg%x", apname, Players[Player_num].callsign, (Game_mode & GM_MULTI_COOP) ? "m" : "s", i+10);
 		valid = 0;
 		fp = PHYSFSX_openReadBuffered(filename[i]);
 		if (fp) {
