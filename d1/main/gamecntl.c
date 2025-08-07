@@ -509,6 +509,7 @@ int HandleSystemKey(int key)
 				switch(choice)
 				{
 					case 0: // Abort Game
+						// VERY IMPORTANT to add override in window_close so that it saves your game based on your current level! -happygreenfairy
 						window_close(Game_wind);
 						break;
 					case 1: // Options

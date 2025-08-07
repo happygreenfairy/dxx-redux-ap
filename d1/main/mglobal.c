@@ -94,3 +94,14 @@ fix64	Next_missile_fire_time;			//	Time at which player can next fire his select
 #define DEFAULT_DIFFICULTY		1
 
 int	Difficulty_level=DEFAULT_DIFFICULTY;	//	Difficulty level in 0..NDL-1, 0 = easiest, NDL-1 = hardest
+
+// add extra values for forcing weapons enabled/disabled -happygreenfairy
+bool apVulcanOverride;
+bool apSpreadOverride;
+bool apPlasmaOverride;
+bool apFusionOverride;
+int apConcussionOverride;
+int apHomingOverride;
+int apProximityOverride;
+int apSmartOverride;
+int apMegaOverride;
