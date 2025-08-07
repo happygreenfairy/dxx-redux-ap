@@ -77,7 +77,7 @@ COPYRIGHT 1993-1998 PARALLAX SOFTWARE CORPORATION.  ALL RIGHTS RESERVED.
 // 6 - Added buggin' cheat save
 // 7 - Added other cheat saves and game_id.
 
-#define NUM_SAVES 30
+#define NUM_SAVES 10
 #define THUMBNAIL_W 100
 #define THUMBNAIL_H 50
 #define DESC_LENGTH 20
@@ -657,6 +657,8 @@ int state_get_savegame_filename(char * fname, char * dsc, char * caption, int bl
 // Duplicate of above for archipelago -happygreenfairy
 int state_ap_get_savegame_filename(char* fname, char* dsc, char* caption, int blind_save, char* apname)
 {
+	char textThatSaysGame[DESC_LENGTH] = "game";
+	strcpy(dsc, textThatSaysGame);
 	PHYSFS_file* fp;
 	int i, choice, version, nsaves;
 	newmenu_item m[NUM_SAVES + 1];
@@ -671,7 +673,8 @@ int state_ap_get_savegame_filename(char* fname, char* dsc, char* caption, int bl
 	for (i = 0; i < NUM_SAVES; i++) {
 		sc_bmp[i] = NULL;
 		//is this where the filename gets set?
-		snprintf(filename[i], PATH_MAX, GameArg.SysUsePlayersDir ? "Players/%s/%s.%sg%x" : "%s/%s.%sg%x", apname, Players[Player_num].callsign, (Game_mode & GM_MULTI_COOP) ? "m" : "s", i+10);
+		snprintf(filename[i], PATH_MAX, GameArg.SysUsePlayersDir ? "Players/aptest/%s.%sg%x" : "/aptest/%s.%sg%x", Players[Player_num].callsign, (Game_mode & GM_MULTI_COOP) ? "m" : "s", i);
+		//snprintf(filename[i], PATH_MAX, GameArg.SysUsePlayersDir ? "Players/%s/%s.%sg%x" : "%s/%s.%sg%x", apname, Players[Player_num].callsign, (Game_mode & GM_MULTI_COOP) ? "m" : "s", i+10);
 		valid = 0;
 		fp = PHYSFSX_openReadBuffered(filename[i]);
 		if (fp) {
@@ -722,10 +725,7 @@ int state_ap_get_savegame_filename(char* fname, char* dsc, char* caption, int bl
 	int temp_state_quick_item = state_quick_item;
 	state_quick_item = Current_level_num+10;
 
-	if (blind_save)
-		choice = state_default_item + 1;
-	else
-		choice = newmenu_do2(NULL, caption, NUM_SAVES + 1, m, (int (*)(newmenu*, d_event*, void*))state_callback, sc_bmp, state_default_item + 1, NULL);
+	choice = state_quick_item;
 
 	for (i = 0; i < NUM_SAVES; i++) {
 		if (sc_bmp[i])
@@ -734,7 +734,7 @@ int state_ap_get_savegame_filename(char* fname, char* dsc, char* caption, int bl
 
 	if (choice > 0) {
 		strcpy(fname, filename[choice - 1]);
-		if (dsc != NULL) strcpy(dsc, desc[choice - 1]);
+		//if (dsc != NULL) strcpy(dsc, desc[choice - 1]);
 		state_quick_item = state_default_item = choice - 1;
 		return choice;
 	}
@@ -919,7 +919,8 @@ int state_save_all(int blind_save)
 int ap_state_save_all(char worldname[512])
 {
 	int	rval;
-	char	filename[PATH_MAX];
+	char	filename[PATH_MAX], desc[DESC_LENGTH + 1];
+	char	descript[DESC_LENGTH + 1] = "game";
 
 	if (Game_mode & GM_MULTI)
 	{
@@ -931,22 +932,24 @@ int ap_state_save_all(char worldname[512])
 	stop_time();
 
 	memset(&filename, '\0', PATH_MAX);
-	memset(&worldname, '\0', DESC_LENGTH + 1);
+	memset(&desc, '\0', DESC_LENGTH + 1);
 	//code to attempt to add level number to end of description -happygreenfairy
-	char *levelnumAsChar[4];
+	//char *levelnumAsChar[4];
 	//I apologize to anybody looking at my hacky solution to make sure this is always 2 digits. I don't feel like double checking whatever the "proper" way to do this is right now. -happygreenfairy
-	if (Current_level_num > 9) { sprintf(levelnumAsChar, "%d", Current_level_num); }
-	if (Current_level_num <= 9) { sprintf(levelnumAsChar, "0%d", Current_level_num); }
+	//wait, do I even need level num as char??? I realize now that I'm already using the level number in another place... oh. right. I don't need it I guess.
+	//if (Current_level_num > 9) { sprintf(levelnumAsChar, "%d", Current_level_num); }
+	//if (Current_level_num <= 9) { sprintf(levelnumAsChar, "0%d", Current_level_num); }
 	// This line chooses the save file for saving later! Keep that in mind! -happygreenfairy
-	if (!state_ap_get_save_file(filename, levelnumAsChar, worldname))
+
+	//if (!state_get_save_file(filename, desc, 1))
+	if (!state_ap_get_save_file(filename, desc, worldname))
 	{
 		start_time();
 		return 0;
 	}
 
-
 	// This line seems to actually finish saving the file. -happygreenfairy
-	rval = state_save_all_sub(filename, levelnumAsChar);
+	rval = state_save_all_sub(filename, descript);
 
 	if (rval)
 		HUD_init_message_literal(HM_DEFAULT, "Game saved");
