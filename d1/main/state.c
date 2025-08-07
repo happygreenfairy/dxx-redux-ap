@@ -561,6 +561,8 @@ static int state_default_item = 0;
 int state_quick_item = -1;
 
 
+// THIS IS WHERE GAME SAVE SELECTION IS DONE! THIS IS VERY IMPORTANT! -happygreenfairy
+
 /* Present a menu for selection of a savegame filename.
  * For saving, dsc should be a pre-allocated buffer into which the new
  * savegame description will be stored.
@@ -652,6 +654,7 @@ int state_get_savegame_filename(char * fname, char * dsc, char * caption, int bl
 	return 0;
 }
 
+// This calls another function which chooses a save slot! If it isn't clear, saving in this game seems to be kind of slightly scuffed in how it works (single line function? really?) and I want to avoid needing to find all this again. -happygreenfairy
 int state_get_save_file(char * fname, char * dsc, int blind_save)
 {
 	return state_get_savegame_filename(fname, dsc, "Save Game", blind_save);
@@ -817,6 +820,46 @@ int state_save_all(int blind_save)
 	return rval;
 }
 
+//	duplicate of state_save_all for archipelago purposes. not tested yet! probably doesn't work at all! -happygreenfairy
+int ap_state_save_all(char worldname[512])
+{
+	int	rval;
+	char	filename[PATH_MAX];
+
+	if (Game_mode & GM_MULTI)
+	{
+		if (Game_mode & GM_MULTI_COOP)
+			multi_initiate_save_game();
+		return 0;
+	}
+
+	stop_time();
+
+	memset(&filename, '\0', PATH_MAX);
+	memset(&worldname, '\0', DESC_LENGTH + 1);
+	// This line chooses the save file for saving later! Keep that in mind! -happygreenfairy
+	if (!state_get_save_file(filename, worldname, 1))
+	{
+		start_time();
+		return 0;
+	}
+	//code to attempt to add level number to end of description -happygreenfairy
+	char levelnumAsChar[4];
+	//I apologize to anybody looking at my hacky solution to make sure this is always 2 digits. I don't feel like double checking whatever the "proper" way to do this is right now. -happygreenfairy
+	if (Current_level_num > 9) { sprintf(levelnumAsChar, "__%d", Current_level_num); }
+	if (Current_level_num <= 9) { sprintf(levelnumAsChar, "__0%d", Current_level_num); }
+
+
+	// This line seems to actually finish saving the file. -happygreenfairy
+	rval = state_save_all_sub(filename, strcat(worldname, levelnumAsChar));
+
+	if (rval)
+		HUD_init_message_literal(HM_DEFAULT, "Game saved");
+
+	return rval;
+}
+
+// This function seems to actually finish saving the file. -happygreenfairy
 int state_save_all_sub(char *filename, char *desc)
 {
 	int i,j;

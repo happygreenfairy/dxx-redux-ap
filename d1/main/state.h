@@ -24,6 +24,8 @@ COPYRIGHT 1993-1998 PARALLAX SOFTWARE CORPORATION.  ALL RIGHTS RESERVED.
 
 int state_save_all(int blind_save);
 int state_restore_all(int in_game );
+//	duplicate of state_save_all for archipelago purposes. not tested yet! -happygreenfairy
+int ap_state_save_all(char worldname[512]);
 
 extern int state_save_old_game(int slotnum, char * sg_name, player_rw * sg_player, 
                         int sg_difficulty_level, int sg_primary_weapon, 
