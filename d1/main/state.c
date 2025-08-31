@@ -655,7 +655,93 @@ int state_get_savegame_filename(char * fname, char * dsc, char * caption, int bl
 }
 
 // Duplicate of above for archipelago -happygreenfairy
-int state_ap_get_savegame_filename(char* fname, char* dsc, char* caption, int blind_save, char* apname)
+int state_ap_get_savegame_filename(char* fname, char* dsc, char* caption, int blind_save, char* apname, int level)
+{
+	PHYSFS_file* fp;
+	int i, choice, version, nsaves;
+	char filename[NUM_SAVES][PATH_MAX];
+	char desc[NUM_SAVES][DESC_LENGTH + 16];
+	//grs_bitmap* sc_bmp[NUM_SAVES];
+	char id[5], dummy_callsign[CALLSIGN_LEN + 1];
+	int valid;
+	//set custom variable for adding archipelago name to player name and using that instead of raw player name
+	char playerAndAP[128];
+	snprintf(playerAndAP, 128, "%s_%s", Players[Player_num].callsign, apname);
+
+	nsaves = 0;
+	//changed it instead of i to be level number! -happygreenfairy
+	//sc_bmp[level] = NULL;
+	//is this where the filename gets set? wait, i just realized... this sets filename[i] to this value... then physfsx_openreadbuffered does... something with it to set fp to something. Oh wait, I see what this is for now. This is for looping *existing* saves! No wonder I've had so much trouble. -happygreenfairy
+	snprintf(filename[level], PATH_MAX, GameArg.SysUsePlayersDir ? "Players/%s.%sg%x" : "%s.%sg%x", playerAndAP, (Game_mode & GM_MULTI_COOP) ? "m" : "s", level);
+	valid = 0;
+	fp = PHYSFSX_openReadBuffered(filename[level]);
+	if (fp) {
+		//Read id
+		PHYSFS_read(fp, id, sizeof(char) * 4, 1);
+		if (!memcmp(id, dgss_id, 4)) {
+			//Read version
+			PHYSFS_read(fp, &version, sizeof(int), 1);
+			// In case it's Coop, read state_game_id & callsign as well
+			if (Game_mode & GM_MULTI_COOP)
+			{
+				PHYSFS_seek(fp, PHYSFS_tell(fp) + sizeof(PHYSFS_sint32)); // skip state_game_id
+				PHYSFS_read(fp, &dummy_callsign, sizeof(char) * CALLSIGN_LEN + 1, 1);
+			}
+			if ((version >= STATE_COMPATIBLE_VERSION) || (SWAPINT(version) >= STATE_COMPATIBLE_VERSION)) {
+				// Read description
+				PHYSFS_read(fp, desc[level], sizeof(char) * DESC_LENGTH, 1);
+				//rpad_string( desc[i], DESC_LENGTH-1 );
+				//if (dsc == NULL) m[level + 1].type = NM_TYPE_MENU;
+				// Read thumbnail, not actually doing this, don't need it -happygreenfairy
+				//sc_bmp[level] = gr_create_bitmap(THUMBNAIL_W, THUMBNAIL_H);
+				//PHYSFS_read(fp, sc_bmp[level]->bm_data, THUMBNAIL_W * THUMBNAIL_H, 1);
+				nsaves++;
+				valid = 1;
+			}
+		}
+		PHYSFS_close(fp);
+	}
+	if (!valid) {
+		strcpy(desc[level], TXT_EMPTY);
+		//rpad_string( desc[i], DESC_LENGTH-1 );
+		//if (dsc == NULL) m[level + 1].type = NM_TYPE_TEXT;
+	}
+	//if (dsc != NULL) {
+		//m[level + 1].type = NM_TYPE_INPUT_MENU;
+	//}
+	//m[level + 1].text_len = DESC_LENGTH - 1;
+	//m[level + 1].text = desc[level];
+
+	if (dsc == NULL && nsaves < 1) {
+		nm_messagebox(NULL, 1, "Ok", "No saved games were found!");
+		return 0;
+	}
+
+	sc_last_item = -1;
+
+	if (blind_save && state_quick_item < 0)
+		blind_save = 0;		// haven't picked a slot yet
+
+	//if (blind_save)
+	//	choice = state_default_item + 1;
+	//else
+	//	choice = newmenu_do2(NULL, caption, NUM_SAVES + 1, m, (int (*)(newmenu*, d_event*, void*))state_callback, sc_bmp, state_default_item + 1, NULL);
+	//don't think I need the above code here -happygreenfairy
+
+	//if (sc_bmp[level])
+	//	gr_free_bitmap(sc_bmp[level]);
+
+	if (level > 0) {
+		strcpy(fname, filename[level]);
+		if (dsc != NULL) strcpy(dsc, desc[level]);
+		state_quick_item = state_default_item = level;
+		return level;
+	}
+	return 0;
+}
+
+// OUTDATED Duplicate of above for archipelago, will remove later -happygreenfairy
+int state_apold_get_savegame_filename(char* fname, char* dsc, char* caption, int blind_save, char* apname)
 {
 	char textThatSaysGame[DESC_LENGTH] = "game";
 	strcpy(dsc, textThatSaysGame);
@@ -749,14 +835,20 @@ int state_get_save_file(char * fname, char * dsc, int blind_save)
 	return state_get_savegame_filename(fname, dsc, "Save Game", blind_save);
 }
 //duplicate of above for archipelago, added third argument "apn" for archipelago world name + player name -happygreenfairy
-int state_ap_get_save_file(char* fname, char* dsc, char* apn)
+int state_ap_get_save_file(char* fname, char* dsc, int blind_save, char* apn, int level)
 {	
-	return state_ap_get_savegame_filename(fname, dsc, "Save Game", 1, apn);
+	return state_ap_get_savegame_filename(fname, dsc, "Save Game", blind_save, apn, level);
 }
 
 int state_get_restore_file(char * fname)
 {
 	return state_get_savegame_filename(fname, NULL, "Select Game to Restore", 0);
+}
+
+//duplicate of above for archipelago, added second argument "apn" for archipelago world name + player name -happygreenfairy
+int state_ap_get_restore_file(char* fname, char* apn, int level)
+{
+	return state_ap_get_savegame_filename(fname, NULL, "Select Game to Restore", 0, apn, level);
 }
 
 int state_save_old_game(int slotnum, char * sg_name, player_rw * sg_player, 
@@ -916,11 +1008,12 @@ int state_save_all(int blind_save)
 
 //	duplicate of state_save_all for archipelago purposes. not tested yet! probably doesn't work at all! -happygreenfairy
 // debating whether or not to use this still
-int ap_state_save_all(char worldname[512])
+int ap_state_save_all(int blind_save, char worldname[512])
 {
 	int	rval;
 	char	filename[PATH_MAX], desc[DESC_LENGTH + 1];
-	char	descript[DESC_LENGTH + 1] = "game";
+	//char	descript[DESC_LENGTH + 1] = "game";
+	//I don't know what I was hoping to accomplish with the above line but it did work? -happygreenfairy
 
 	if (Game_mode & GM_MULTI)
 	{
@@ -942,14 +1035,14 @@ int ap_state_save_all(char worldname[512])
 	// This line chooses the save file for saving later! Keep that in mind! -happygreenfairy
 
 	//if (!state_get_save_file(filename, desc, 1))
-	if (!state_ap_get_save_file(filename, desc, worldname))
+	if (!state_ap_get_save_file(filename, desc, blind_save, worldname, Current_level_num))
 	{
 		start_time();
 		return 0;
 	}
 
 	// This line seems to actually finish saving the file. -happygreenfairy
-	rval = state_save_all_sub(filename, descript);
+	rval = state_save_all_sub(filename, desc);
 
 	if (rval)
 		HUD_init_message_literal(HM_DEFAULT, "Game saved");
@@ -1246,6 +1339,47 @@ int state_restore_all(int in_game)
 			return 0;
 		}
 	}
+
+	start_time();
+
+	return state_restore_all_sub(filename);
+}
+
+//duplicate of above for archipelago -happygreenfairy
+int ap_state_restore_all(int in_game, char worldname[512], int level)
+{
+	char filename[PATH_MAX];
+
+	if (Newdemo_state == ND_STATE_RECORDING)
+		newdemo_stop_recording(0);
+
+	if (Newdemo_state != ND_STATE_NORMAL)
+		return 0;
+
+	if (Game_mode & GM_MULTI)
+	{
+		if (Game_mode & GM_MULTI_COOP)
+			multi_initiate_restore_game();
+		return 0;
+	}
+
+	stop_time();
+	//temporary value thingy -happygreenfairy
+	char apworldtestchar[15] = "apworldtest";
+	if (!state_ap_get_restore_file(filename, apworldtestchar, level)) {
+		start_time();
+		return 0;
+	}
+
+	//if (in_game) {
+	//	int choice;
+	//	choice = nm_messagebox(NULL, 2, "Yes", "No", "Restore Game?");
+	//	if (choice != 0) {
+	//		start_time();
+	//		return 0;
+	//	}
+	//}
+	//This version won't ever be called in-game so... -happygreenfairy
 
 	start_time();
 

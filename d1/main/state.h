@@ -24,9 +24,9 @@ COPYRIGHT 1993-1998 PARALLAX SOFTWARE CORPORATION.  ALL RIGHTS RESERVED.
 
 int state_save_all(int blind_save);
 int state_restore_all(int in_game );
-//	duplicate of state_save_all for archipelago purposes. not tested yet! -happygreenfairy
-// debating whether or not to use this still
-int ap_state_save_all(char worldname[512]);
+//	duplicate of state_save_all for archipelago purposes. not tested thoroughly yet! -happygreenfairy
+int ap_state_save_all(int blind_save, char worldname[512]);
+int ap_state_restore_all(int in_game, char worldname[512], int level);
 
 extern int state_save_old_game(int slotnum, char * sg_name, player_rw * sg_player, 
                         int sg_difficulty_level, int sg_primary_weapon, 
@@ -39,7 +39,9 @@ extern uint state_game_id;
 extern int state_quick_item;
 
 int state_get_save_file(char *fname, char * dsc, int blind_save);
+int state_ap_get_save_file(char* fname, char* dsc, int blind_save, char* apn, int level); //extra one for archipelago -happygreenfairy
 int state_get_restore_file(char *fname);
+int state_ap_get_restore_file(char* fname, char* apn, int level); //extra one for archipelago -happygreenfairy
 int state_get_game_id(char *filename);
 
 #endif

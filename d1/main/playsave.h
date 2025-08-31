@@ -140,6 +140,7 @@ typedef struct player_config
 	int AutomapRenderItems; // show important items on automap at all times
 	int AutomapUnveilFromStart; // replicates map power-ups
 	int InfiniteLives; // don't lose lives on death when enabled
+	int AutosaveAutoload; // automatically save/load when you leave a level or enter a level
 } __pack__ player_config;
 
 extern struct player_config PlayerCfg;

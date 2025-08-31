@@ -819,7 +819,12 @@ int do_new_game_menu()
 	if (!do_difficulty_menu())
 		return 0;
 
-	StartNewGame(new_level_num);
+	//new stuff for loading game automatically if possible -happygreenfairy
+	char apworldtestchar[15] = "apworldtest";
+	if(PlayerCfg.AutosaveAutoload == 1) {
+		if (!ap_state_restore_all(0, apworldtestchar, new_level_num)) { StartNewGame(new_level_num); }
+	}
+	else { StartNewGame(new_level_num); }
 
 	return 1;	// exit mission listbox
 }
@@ -2214,7 +2219,7 @@ struct ap_menu_data {
 
 void do_ap_menu()
 {
-	newmenu_item m[11];
+	newmenu_item m[12];
 	int i = 0;
 	struct ap_menu_data ap_menu_data;
 
@@ -2238,12 +2243,14 @@ void do_ap_menu()
 		m[9].type = NM_TYPE_TEXT;
 		m[9].text = "-DIFFICULTY TWEAKS-";
 		ADD_CHECK(10, "Infinite lives", PlayerCfg.InfiniteLives);
+		ADD_CHECK(11, "Autosave/autoload", PlayerCfg.AutosaveAutoload);
 
 		i = newmenu_do1(NULL, TXT_ARCHIPELAGO_MENU, SDL_arraysize(m), m, menu_ap_options_handler, &ap_menu_data, i);
 
 		PlayerCfg.AutomapRenderItems = m[6].value;
 		PlayerCfg.AutomapUnveilFromStart = m[7].value;
 		PlayerCfg.InfiniteLives = m[10].value;
+		PlayerCfg.AutosaveAutoload = m[11].value;
 
 	} while (i > -1);
 }
