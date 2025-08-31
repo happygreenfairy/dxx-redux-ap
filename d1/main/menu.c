@@ -820,9 +820,9 @@ int do_new_game_menu()
 		return 0;
 
 	//new stuff for loading game automatically if possible -happygreenfairy
-	char apworldtestchar[15] = "apworldtest";
+	//char apworldtestchar[15] = "apworldtest";
 	if(PlayerCfg.AutosaveAutoload == 1) {
-		if (!ap_state_restore_all(0, apworldtestchar, new_level_num)) { StartNewGame(new_level_num); }
+		if (!ap_state_restore_all(0, apworldname, new_level_num)) { StartNewGame(new_level_num); }
 	}
 	else { StartNewGame(new_level_num); }
 

@@ -49,6 +49,7 @@ int		Num_segments = 0;
 int		Highest_vertex_index=0;
 int		Highest_segment_index=0;
 
+
 //	Translate table to get opposite side of a face on a segment.
 char	Side_opposite[MAX_SIDES_PER_SEGMENT] = {WRIGHT, WBOTTOM, WLEFT, WTOP, WFRONT, WBACK};
 
@@ -105,3 +106,5 @@ int apHomingOverride;
 int apProximityOverride;
 int apSmartOverride;
 int apMegaOverride;
+//define apworld name variable, which will load the world name and player name in tandem when connected, and use "apworldtest" until it's been loaded in properly
+char apworldname[50] = "apworldtest";

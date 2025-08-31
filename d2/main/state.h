@@ -29,6 +29,8 @@ int state_restore_all(int in_game, int secret_restore, char *filename_override);
 
 extern uint state_game_id;
 extern int state_quick_item;
+//define apworld name variable, which will load the world name and player name in tandem when connected, and use "apworldtest" until it's been loaded in properly
+char apworldname[50];
 
 int state_save_all_sub(char *filename, char *desc);
 int state_restore_all_sub(char *filename, int secret_restore);

@@ -1364,9 +1364,7 @@ int ap_state_restore_all(int in_game, char worldname[512], int level)
 	}
 
 	stop_time();
-	//temporary value thingy -happygreenfairy
-	char apworldtestchar[15] = "apworldtest";
-	if (!state_ap_get_restore_file(filename, apworldtestchar, level)) {
+	if (!state_ap_get_restore_file(filename, apworldname, level)) {
 		start_time();
 		return 0;
 	}
@@ -1844,4 +1842,3 @@ int state_get_game_id(char *filename)
 
 	return state_game_id;
 }
-

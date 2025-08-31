@@ -46,6 +46,8 @@ extern fix64 Last_laser_fired_time;
 extern fix64 Next_missile_fire_time;  // Time at which player can next fire his selected missile.
 extern fix64 Next_flare_fire_time;
 extern fix Laser_delay_time;        // Delay between laser fires.
+//load apworld name variable
+extern char apworldname[50];
 
 // constants for ft_preference
 #define FP_RIGHT        0
@@ -216,4 +218,3 @@ extern game_cheats cheats;
 void game_disable_cheats();
 
 #endif
-

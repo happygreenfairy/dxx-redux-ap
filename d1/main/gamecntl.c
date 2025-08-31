@@ -503,8 +503,6 @@ int HandleSystemKey(int key)
 			{
 				int choice;
 				int allow_loadsave = !(Game_mode & GM_MULTI) || (Game_mode & GM_MULTI_COOP);
-				//extra char thing -happygreenfairy
-				char apworldtestchar[15] = "apworldtest";
 				choice = allow_loadsave ?
 					nm_messagebox(NULL, 4, "Abort Game", TXT_OPTIONS_, "Save Game...", TXT_LOAD_GAME, "Game Menu") :
 					nm_messagebox(NULL, 2, "Abort Game", TXT_OPTIONS_, "Game Menu");
@@ -513,7 +511,7 @@ int HandleSystemKey(int key)
 					case 0: // Abort Game
 						// VERY IMPORTANT to add override in window_close so that it saves your game based on your current level! -happygreenfairy
 						if (PlayerCfg.AutosaveAutoload == 1) {
-							ap_state_save_all(1, apworldtestchar);
+							ap_state_save_all(1, apworldname);
 						}
 						window_close(Game_wind);
 						break;

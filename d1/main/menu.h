@@ -36,5 +36,4 @@ extern int select_demo(void);
 extern char *menu_difficulty_text[];
 
 extern void get_color_name(char* color_name, int color_name_length, int color_value, int use_alternate_colors);
-
 #endif
